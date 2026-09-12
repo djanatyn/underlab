@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 mod model {
     use serde::{Deserialize, Serialize};
+    use std::process::Command;
     use strum::Display;
 
     /// Infrastructure running containers.
@@ -16,6 +17,35 @@ mod model {
         VPS,
     }
 
+    impl Host {
+        pub fn prepare_binary(&self) -> anyhow::Result<()> {
+            let platform = match self {
+                Host::Pi => "aarch64-unknown-linux-musl",
+                Host::Synology => "x86_64-unknown-linux-musl",
+                Host::VPS => "x86_64-unknown-linux-musl",
+            };
+
+            let output = Command::new("cargo")
+                .arg("zigbuild")
+                .arg("--release")
+                .arg("--locked")
+                .arg("--target")
+                .arg(platform)
+                .arg("--bin")
+                .arg("homelab")
+                .output()?;
+
+            if !output.status.success() {
+                return Err(anyhow::anyhow!(
+                    "failed to build: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                ));
+            }
+
+            Ok(())
+        }
+    }
+
     /// docker-compose services.
     #[derive(Debug, Display, Serialize, Deserialize, Clone)]
     pub enum Service {
@@ -27,6 +57,14 @@ mod model {
         Paperless,
         /// Pet Camera
         Frigate,
+        /// Pastebin
+        Wastebin,
+        /// Personal Notebook
+        Plumio,
+        /// OpenTelemetry
+        OtelCollector,
+        /// Homepage
+        Homarr,
     }
 }
 
@@ -51,8 +89,6 @@ mod config {
         pub deploy_root: PathBuf,
         /// Configuration files / directories to populate
         pub files: Vec<ConfigArtifact>,
-        /// Checks to run before deploying
-        pub preconditions: Vec<DeployCheck>,
     }
 
     #[derive(Debug, Display, Serialize, Deserialize, Clone)]
@@ -71,18 +107,6 @@ mod config {
             owner: u32,
             group: u32,
         },
-    }
-
-    // Declarative health checks defined in manifest and evaluated as deploy
-    // pre-conditions
-    #[derive(Debug, Serialize, Deserialize, Clone)]
-    pub enum DeployCheck {
-        /// Path is a mountpoint
-        Mountpoint(PathBuf),
-        /// Path exists
-        PathExists(PathBuf),
-        /// External docker network is present (e.g. `proxy`)
-        DockerNetwork(String),
     }
 
     impl HomelabConfig {
@@ -151,21 +175,10 @@ mod config {
             Ok(())
         }
     }
-
-    impl DeployCheck {
-        pub fn eval(&self) -> Result<(), String> {
-            println!("TODO: evaluate check");
-            Ok(())
-        }
-
-        pub fn describe(&self) -> String {
-            "TODO: describe check".to_string()
-        }
-    }
 }
 
 mod manifest {
-    use crate::config::{ConfigArtifact, DeployCheck, DeployTargetConfig};
+    use crate::config::{ConfigArtifact, DeployTargetConfig};
     use crate::model::{Host, Service};
 
     use std::path::{Component, Path, PathBuf};
@@ -192,7 +205,6 @@ mod manifest {
         host: Host,
         deploy_root: PathBuf,
         files: Vec<ManifestArtifact>,
-        preconditions: Vec<DeployCheck>,
     }
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -347,7 +359,6 @@ mod manifest {
                     .iter()
                     .map(ManifestArtifact::try_from)
                     .collect::<anyhow::Result<Vec<ManifestArtifact>>>()?,
-                preconditions: target.preconditions,
             })
         }
     }
@@ -445,7 +456,8 @@ fn main() -> anyhow::Result<()> {
                 .prefix(".tmp-")
                 .tempdir_in(&build_root)?;
 
-            BuildManifest::assemble(target, build_directory)?;
+            let result = BuildManifest::assemble(target, build_directory)?;
+            println!("{}", result.display());
         }
         CliCommand::Apply { manifest } => todo!(),
         CliCommand::ListTargets {} => todo!(),
