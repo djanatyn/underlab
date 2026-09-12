@@ -1,0 +1,143 @@
+---
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  hostmetrics:
+    collection_interval: 60s
+    root_path: /hostfs
+    scrapers:
+      cpu: {}
+      disk: {}
+      load: {}
+      filesystem: {}
+      memory: {}
+      network: {}
+      paging: {}
+      processes: {}
+
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    api_version: "1.40"
+    collection_interval: 10s
+    timeout: 20s
+
+  filelog:
+    include:
+      - /var/lib/docker/containers/*/*-json.log
+    start_at: end
+    include_file_name: false
+    include_file_path: true
+    operators:
+      - id: container-parser
+        type: container
+        format: docker
+        add_metadata_from_filepath: false
+
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: miniflux
+          scrape_interval: 60s
+          metrics_path: /metrics
+          static_configs:
+            - targets:
+                - miniflux-miniflux-1:8080
+              labels:
+                service: miniflux
+                host: djan-pi
+
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 256
+    spike_limit_mib: 64
+
+  resourcedetection/pi:
+    detectors: [env, system, docker]
+    timeout: 2s
+    system:
+      hostname_sources: [os]
+
+  resource/pi:
+    attributes:
+      - key: host.name
+        value: djan-pi
+        action: upsert
+      - key: deployment.environment
+        value: homelab
+        action: upsert
+
+  batch:
+    send_batch_size: 1000
+    timeout: 10s
+
+exporters:
+  otlp:
+    endpoint: signoz.build.djan.org:4317
+    tls:
+      insecure: true
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions:
+    - health_check
+
+  pipelines:
+    traces/relay:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - batch
+      exporters:
+        - otlp
+
+    metrics/pi:
+      receivers:
+        - hostmetrics
+        - docker_stats
+        - prometheus
+      processors:
+        - memory_limiter
+        - resourcedetection/pi
+        - resource/pi
+        - batch
+      exporters:
+        - otlp
+
+    metrics/relay:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - batch
+      exporters:
+        - otlp
+
+    logs/pi:
+      receivers:
+        - filelog
+      processors:
+        - memory_limiter
+        - resourcedetection/pi
+        - resource/pi
+        - batch
+      exporters:
+        - otlp
+
+    logs/relay:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - batch
+      exporters:
+        - otlp

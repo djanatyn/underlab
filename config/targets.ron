@@ -1,9 +1,30 @@
 HomelabConfig(
     targets: [
         DeployTargetConfig(
+            service: Traefik,
+            host: Pi,
+            deploy_root: "/srv/traefik",
+            files: [
+                Directory(
+                    deploy_path: "./letsencrypt",
+                    mode: 0o700,
+                    owner: 1000,
+                    group: 1000,
+                ),
+                ConfigFile(
+                    repo_path: "./config/pi/traefik/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o600,
+                    owner: 1000,
+                    group: 100,
+                )
+            ],
+        ),
+        DeployTargetConfig(
             service: Paperless,
             host: Pi,
-            deploy_root: "/homelab/paperless",
+            deploy_root: "/srv/paperless",
             files: [
                 Directory(
                     deploy_path: "./consume",
@@ -12,7 +33,7 @@ HomelabConfig(
                     group: 100
                 ),
                 ConfigFile(
-                    repo_path: "./config/pi/miniflux/docker-compose.yml",
+                    repo_path: "./config/pi/paperless/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o600,
@@ -20,10 +41,92 @@ HomelabConfig(
                     group: 100,
                 )
             ],
-            preconditions: [
-                Mountpoint("/docker-usb"),
-                DockerNetwork("proxy"),
-            ]
+        ),
+        DeployTargetConfig(
+            service: Miniflux,
+            host: Pi,
+            deploy_root: "/srv/miniflux",
+            files: [
+                Directory(
+                    deploy_path: "./database",
+                    mode: 0o700,
+                    owner: 999,
+                    group: 984
+                ),
+                ConfigFile(
+                    repo_path: "./config/pi/miniflux/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                    owner: 1000,
+                    group: 1000,
+                )
+            ],
+        ),
+        DeployTargetConfig(
+            service: Homarr,
+            host: Pi,
+            deploy_root: "/srv/homarr",
+            files: [
+                Directory(
+                    deploy_path: "./homarr",
+                    mode: 0o700,
+                    owner: 10001,
+                    group: 10001
+                ),
+                ConfigFile(
+                    repo_path: "./config/pi/homarr/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                    owner: 1000,
+                    group: 1000,
+                )
+            ],
+        ),
+        DeployTargetConfig(
+            service: Wastebin,
+            host: Pi,
+            deploy_root: "/srv/wastebin",
+            files: [
+                Directory(
+                    deploy_path: "./data",
+                    mode: 0o700,
+                    owner: 10001,
+                    group: 10001
+                ),
+                ConfigFile(
+                    repo_path: "./config/pi/wastebin/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                    owner: 1000,
+                    group: 1000,
+                )
+            ],
+        ),
+        DeployTargetConfig(
+            service: OtelCollector,
+            host: Pi,
+            deploy_root: "/srv/otel-collector",
+            files: [
+                ConfigFile(
+                    repo_path: "./config/pi/otel-collector/docker-compose.yml",
+                    artifact_path: "./config.yaml",
+                    deploy_path: "./config.yaml",
+                    mode: 0o664,
+                    owner: 1000,
+                    group: 1000,
+                )
+                ConfigFile(
+                    repo_path: "./config/pi/otel-collector/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                    owner: 1000,
+                    group: 1000,
+                )
+            ],
         ),
     ]
 )
