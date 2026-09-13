@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./homarr/appdata:/appdata
+      - underlab_homarr_appdata:/appdata
     environment:
       - SECRET_ENCRYPTION_KEY=${SECRET_ENCRYPTION_KEY}
     labels:
@@ -24,4 +24,8 @@ services:
 
 networks:
   proxy:
+    external: true
+
+volumes:
+  underlab_homarr_appdata:
     external: true

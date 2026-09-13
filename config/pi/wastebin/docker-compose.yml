@@ -8,7 +8,7 @@ services:
     ports:
       - "8088:8088"
     volumes:
-      - './data:/data'
+      - underlab_wastebin_data:/data
     labels:
       - traefik.docker.network=proxy
       - traefik.enable=true
@@ -22,4 +22,8 @@ services:
 
 networks:
   proxy:
+    external: true
+
+volumes:
+  underlab_wastebin_data:
     external: true

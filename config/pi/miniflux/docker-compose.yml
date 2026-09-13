@@ -22,7 +22,7 @@ services:
     image: postgres:18
     restart: unless-stopped
     volumes:
-      - ./database:/var/lib/postgresql
+      - underlab_miniflux_database:/var/lib/postgresql
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -34,4 +34,8 @@ services:
 
 networks:
   proxy:
+    external: true
+
+volumes:
+  underlab_miniflux_database:
     external: true

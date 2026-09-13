@@ -17,7 +17,7 @@ services:
       - FRIGATE_CAMERA_02_PASSWORD=${FRIGATE_CAMERA_02_PASSWORD}
     volumes:
       - ./config:/config
-      - ./frigate:/media/frigate
+      - underlab_frigate_media:/media/frigate
       - /etc/localtime:/etc/localtime:ro
     tmpfs:
       - /tmp/cache:size=1g
@@ -26,3 +26,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  underlab_frigate_media:
+    external: true

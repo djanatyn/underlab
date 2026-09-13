@@ -1,24 +1,39 @@
-HomelabConfig(
+UnderlabConfig(
+    hosts: [
+        DeployHostConfig(
+            host: Pi,
+            ssh_host: "pi.djan.org",
+            ssh_user: "djanatyn",
+            staging_directory: "/var/lib/underlab/staging",
+        ),
+        DeployHostConfig(
+            host: Synology,
+            ssh_host: "nas.djan.org",
+            ssh_user: "djanatyn",
+            staging_directory: "/var/lib/underlab/staging",
+        ),
+        DeployHostConfig(
+            host: VPS,
+            ssh_host: "build.djan.org",
+            ssh_user: "djanatyn",
+            staging_directory: "/var/lib/underlab/staging",
+        ),
+    ],
     targets: [
         DeployTargetConfig(
             service: Traefik,
             host: Pi,
             deploy_root: "/srv/traefik",
             files: [
-                Directory(
-                    deploy_path: "./letsencrypt",
-                    mode: 0o700,
-                    owner: 1000,
-                    group: 1000,
-                ),
                 ConfigFile(
                     repo_path: "./config/pi/traefik/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o600,
-                    owner: 1000,
-                    group: 100,
-                )
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_traefik_letsencrypt"),
             ],
         ),
         DeployTargetConfig(
@@ -26,20 +41,19 @@ HomelabConfig(
             host: Pi,
             deploy_root: "/srv/paperless",
             files: [
-                Directory(
-                    deploy_path: "./consume",
-                    mode: 0o700,
-                    owner: 1026,
-                    group: 100
-                ),
                 ConfigFile(
                     repo_path: "./config/pi/paperless/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o600,
-                    owner: 1000,
-                    group: 100,
-                )
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_paperless_data"),
+                DeployVolume(name: "underlab_paperless_media"),
+                DeployVolume(name: "underlab_paperless_export"),
+                DeployVolume(name: "underlab_paperless_consume"),
+                DeployVolume(name: "underlab_paperless_database"),
             ],
         ),
         DeployTargetConfig(
@@ -47,20 +61,15 @@ HomelabConfig(
             host: Pi,
             deploy_root: "/srv/miniflux",
             files: [
-                Directory(
-                    deploy_path: "./database",
-                    mode: 0o700,
-                    owner: 999,
-                    group: 984
-                ),
                 ConfigFile(
                     repo_path: "./config/pi/miniflux/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o664,
-                    owner: 1000,
-                    group: 1000,
-                )
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_miniflux_database"),
             ],
         ),
         DeployTargetConfig(
@@ -68,20 +77,15 @@ HomelabConfig(
             host: Pi,
             deploy_root: "/srv/homarr",
             files: [
-                Directory(
-                    deploy_path: "./homarr",
-                    mode: 0o700,
-                    owner: 10001,
-                    group: 10001
-                ),
                 ConfigFile(
                     repo_path: "./config/pi/homarr/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o664,
-                    owner: 1000,
-                    group: 1000,
-                )
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_homarr_appdata"),
             ],
         ),
         DeployTargetConfig(
@@ -89,20 +93,15 @@ HomelabConfig(
             host: Pi,
             deploy_root: "/srv/wastebin",
             files: [
-                Directory(
-                    deploy_path: "./data",
-                    mode: 0o700,
-                    owner: 10001,
-                    group: 10001
-                ),
                 ConfigFile(
                     repo_path: "./config/pi/wastebin/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o664,
-                    owner: 1000,
-                    group: 1000,
-                )
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_wastebin_data"),
             ],
         ),
         DeployTargetConfig(
@@ -111,21 +110,90 @@ HomelabConfig(
             deploy_root: "/srv/otel-collector",
             files: [
                 ConfigFile(
-                    repo_path: "./config/pi/otel-collector/docker-compose.yml",
+                    repo_path: "./config/pi/otel-collector/config.yaml",
                     artifact_path: "./config.yaml",
                     deploy_path: "./config.yaml",
                     mode: 0o664,
-                    owner: 1000,
-                    group: 1000,
-                )
+                ),
                 ConfigFile(
                     repo_path: "./config/pi/otel-collector/docker-compose.yml",
                     artifact_path: "./docker-compose.yml",
                     deploy_path: "./docker-compose.yml",
                     mode: 0o664,
-                    owner: 1000,
-                    group: 1000,
                 )
+            ],
+            volumes: [],
+        ),
+        DeployTargetConfig(
+            service: Plumio,
+            host: Pi,
+            deploy_root: "/srv/plumio",
+            files: [
+                ConfigFile(
+                    repo_path: "./config/pi/plumio/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_plumio_data"),
+            ],
+        ),
+        DeployTargetConfig(
+            service: Frigate,
+            host: Synology,
+            deploy_root: "/srv/frigate",
+            files: [
+                ConfigFile(
+                    repo_path: "./config/nas/frigate/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                ),
+                ConfigFile(
+                    repo_path: "./config/nas/frigate/config/config.yaml",
+                    artifact_path: "./config.yaml",
+                    deploy_path: "./config/config.yaml",
+                    mode: 0o664,
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_frigate_media"),
+            ],
+        ),
+        DeployTargetConfig(
+            service: Torrents,
+            host: Synology,
+            deploy_root: "/srv/torrents",
+            files: [
+                ConfigFile(
+                    repo_path: "./config/nas/torrents/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_qbittorrent_config"),
+                DeployVolume(name: "underlab_jackett_data"),
+            ],
+        ),
+        DeployTargetConfig(
+            service: Atuin,
+            host: Synology,
+            deploy_root: "/srv/atuin",
+            files: [
+                ConfigFile(
+                    repo_path: "./config/nas/atuin/docker-compose.yml",
+                    artifact_path: "./docker-compose.yml",
+                    deploy_path: "./docker-compose.yml",
+                    mode: 0o664,
+                ),
+            ],
+            volumes: [
+                DeployVolume(name: "underlab_atuin_config"),
+                DeployVolume(name: "underlab_atuin_database"),
             ],
         ),
     ]

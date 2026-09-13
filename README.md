@@ -1,21 +1,28 @@
-# homelab
+# underlab
 lab notebook and utility scripts for djanatyn's homelab
 
-## cross-compilation
+<p align="center">
+  <img src="https://raw.githubusercontent.com/djanatyn/underlab/main/underlab.gif" alt="mina the hollower underlab icon gif"></img>
+</p>
+
+## inspiration
+
+you should play [mina the hollower](https://www.yachtclubgames.com/games/mina-the-hollower/)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/djanatyn/underlab/main/underlab.png" alt="mina the hollower underlab screenshot"></img>
+</p>
+
+## usage
 
 ```
-# setup
-$ nix profile add nixpkgs#zig nixpkgs#cargo-zigbuild
-$ rustup target add aarch64-unknown-linux-musl
-$ rustup target add x86_64-unknown-linux-musl
+# build an versioned artifact with the configuration planned to be applied
+$ cargo run -- build pi/paperless
+./build/pi-paperless-<timestamp>.tar.gz
 
-# build
-$ cargo zigbuild --release --locked --target x86_64-unknown-linux-musl
-$ cargo zigbuild --release --locked --target aarch64-unknown-linux-musl
+# provision the volumes needed to run the service
+$ cargo run -- provision pi/paperless
 
-# result
-$ file target/aarch64-unknown-linux-musl/release/homelab
-target/aarch64-unknown-linux-musl/release/homelab: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped
-$ file target/x86_64-unknown-linux-musl/release/homelab
-target/x86_64-unknown-linux-musl/release/homelab: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
+# transfer the configuration bundle and apply it remotely using cross-compilation
+$ cargo run -- deploy ./build/pi-paperless-<timestamp>.tar.gz
 ```

@@ -17,7 +17,7 @@ services:
       - ENABLE_ENCRYPTION=true
       - APP_URL=${APP_URL}
     volumes:
-      - ./data:/data
+      - underlab_plumio_data:/data
     networks:
       - plumio-network
       - proxy
@@ -73,4 +73,8 @@ networks:
   plumio-network:
     driver: bridge
   proxy:
+    external: true
+
+volumes:
+  underlab_plumio_data:
     external: true

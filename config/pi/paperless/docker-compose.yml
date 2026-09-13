@@ -10,10 +10,10 @@ services:
     depends_on:
       - broker
     volumes:
-      - ./data:/usr/src/paperless/data
-      - ./media:/usr/src/paperless/media
-      - ./export:/usr/src/paperless/export
-      - ./consume:/usr/src/paperless/consume
+      - underlab_paperless_data:/usr/src/paperless/data
+      - underlab_paperless_media:/usr/src/paperless/media
+      - underlab_paperless_export:/usr/src/paperless/export
+      - underlab_paperless_consume:/usr/src/paperless/consume
     env_file: .env
     environment:
       - PAPERLESS_REDIS=redis://broker:6379
@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
     env_file: .env
     volumes:
-      - "./database:/var/lib/postgresql/data"
+      - underlab_paperless_database:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -53,4 +53,16 @@ services:
 
 networks:
   proxy:
+    external: true
+
+volumes:
+  underlab_paperless_data:
+    external: true
+  underlab_paperless_media:
+    external: true
+  underlab_paperless_export:
+    external: true
+  underlab_paperless_consume:
+    external: true
+  underlab_paperless_database:
     external: true

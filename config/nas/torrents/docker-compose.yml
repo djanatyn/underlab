@@ -26,7 +26,7 @@ services:
       - TZ=Etc/UTC
       - WEBUI_PORT=8080
     volumes:
-      - ./qbittorrent/config:/config
+      - underlab_qbittorrent_config:/config
       - /volume1/media:/media
       - /volume1/music:/music
     restart: unless-stopped
@@ -40,6 +40,12 @@ services:
       - TZ=Etc/UTC
       - AUTO_UPDATE=true #optional
     volumes:
-      - ./jackett/data:/config
+      - underlab_jackett_data:/config
     restart: unless-stopped
     network_mode: "service:gluetun"
+
+volumes:
+  underlab_qbittorrent_config:
+    external: true
+  underlab_jackett_data:
+    external: true
