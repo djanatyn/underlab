@@ -1,4 +1,4 @@
-# <img src="./underlab.gif" alt="underlab icon" width="48" height="48"> underlab
+# <img src="./underlab.gif" alt="underlab icon" width="24" height="24"> underlab
 lab notebook and utility scripts for djanatyn's homelab
 
 ## inspiration
