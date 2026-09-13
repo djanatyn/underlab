@@ -1,14 +1,6 @@
 # <img src="./underlab.gif" alt="underlab icon" width="24" height="24"> underlab
 lab notebook and utility scripts for djanatyn's homelab
 
-## inspiration
-
-you should play [mina the hollower](https://www.yachtclubgames.com/games/mina-the-hollower/)
-
-<p align="center">
-  <img src="./underlab.png" alt="mina the hollower underlab screenshot"></img>
-</p>
-
 ## usage
 
 ```
@@ -22,3 +14,11 @@ $ cargo run -- provision pi/paperless
 # transfer the configuration bundle and apply it remotely using cross-compilation
 $ cargo run -- deploy ./build/pi-paperless-<timestamp>.tar.gz
 ```
+
+## inspiration
+
+you should play [mina the hollower](https://www.yachtclubgames.com/games/mina-the-hollower/)
+
+<p align="center">
+  <img src="./underlab.png" alt="mina the hollower underlab screenshot"></img>
+</p>
