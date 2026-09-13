@@ -8,11 +8,7 @@ anyhow = "1.0.104"
 askama = "0.16.1"
 blake3 = "1.8.5"
 clap = { version = "4.6.5", features = ["derive", "string"] }
-duct = "1.1.1"
 flate2 = "1.1.10"
-gix = "0.86.0"
-insta = "1.48.0"
-kdl = "6.7.1"
 nix = { version = "0.31.3", features = ["fs", "user"] }
 ron = "0.12.2"
 serde = { version = "1.0.229", features = ["derive"] }
